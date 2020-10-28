@@ -64,18 +64,18 @@ namespace ExamOnRefacttoring
             Console.WriteLine(result);
         }
 
-        private static AppSettings GetDataFromJson(string[] args)
+        private static Data GetDataFromJson(string[] args)
         {
             var configuration = ReadDataFromJson(args);
-            var appSettings = new AppSettings();
-            configuration.GetSection(AppSettings.Settings).Bind(appSettings);
-            return appSettings;
+            var data = new Data();
+            configuration.GetSection(Data.MainSectionName).Bind(data);
+            return data;
         }
 
         private static IConfiguration ReadDataFromJson(string[] args)
         {
             IConfiguration configuration = new ConfigurationBuilder()
-                .AddJsonFile("appsettings.json", true, reloadOnChange: true)
+                .AddJsonFile("PlaysAndInvoices.json", true, reloadOnChange: true)
                 .AddEnvironmentVariables()
                 .AddCommandLine(args)
                 .Build();

@@ -2,9 +2,9 @@
 
 namespace ExamOnRefacttoring
 {
-    public class AppSettings
+    public class Data
     {
-        public const string Settings = "appsettings";
+        public const string MainSectionName = "data";
         public Plays Plays { get; set; }
 
         public List<Invoice> Invoices { get; set; }
