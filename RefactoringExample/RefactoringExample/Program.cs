@@ -16,12 +16,14 @@ namespace ExamOnRefacttoring
             Plays = data.Plays;
             Invoices = data.Invoices;
             var performances = GetPerformancesByCustomer("BigCo");
+            var enrichedPerformances = EnrichPerformances(performances);
+            
             var resultStatement = new ResultForStatement
             {
                 Customer =  "BigCo",
-                Performances = EnrichPerformances(performances),
-                TotalAmount = CalculateTotalAmount(EnrichPerformances(performances)),
-                TotalVolumeCredits = CalculateTotalVolumeCredits(EnrichPerformances(performances)),
+                Performances = enrichedPerformances,
+                TotalAmount = CalculateTotalAmount(enrichedPerformances),
+                TotalVolumeCredits = CalculateTotalVolumeCredits(enrichedPerformances),
             };
 
             var result = $"Statement for {resultStatement.Customer} \n";
@@ -113,7 +115,25 @@ namespace ExamOnRefacttoring
         {
             return Plays.GetPlay(playId);
         }
+        
+        
+        class ResultForPerf
+        {
+            public Plays.Play Play { get; set; }
+            public decimal Amount { get; set; }
+            public decimal VolumeCredits { get; set; }
+            
+            public int Audience { get; set; }
+        }
 
+        class ResultForStatement
+        {
+            public string Customer { get; set; }
+            public List<ResultForPerf> Performances { get; set; }
+            public decimal TotalAmount { get; set; }
+            public decimal TotalVolumeCredits { get; set; }
+        }
+        
         static Data GetDataFromJson(string[] args)
         {
             var configuration = ReadDataFromJson(args);
@@ -130,23 +150,6 @@ namespace ExamOnRefacttoring
                 .AddCommandLine(args)
                 .Build();
             return configuration;
-        }
-
-        class ResultForPerf
-        {
-            public Plays.Play Play { get; set; }
-            public decimal Amount { get; set; }
-            public decimal VolumeCredits { get; set; }
-            
-            public int Audience { get; set; }
-        }
-
-        class ResultForStatement
-        {
-            public string Customer { get; set; }
-            public List<ResultForPerf> Performances { get; set; }
-            public decimal TotalAmount { get; set; }
-            public decimal TotalVolumeCredits { get; set; }
         }
     }
 }
