@@ -23,7 +23,7 @@ namespace RefactoringExample
 
         public override decimal GetVolumeCredits()
         {
-            return base.GetVolumeCredits() + Math.Floor((decimal) (Performance.Audience / 5));
+            return base.GetVolumeCredits() + Math.Floor((decimal) Performance.Audience / 5);
         }
     }
 }

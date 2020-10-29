@@ -4,7 +4,7 @@ namespace RefactoringExample
 {
     public abstract class PerformanceCalculator
     {
-        protected Invoice.Performance Performance { get; set; }
+        protected Invoice.Performance Performance { get; }
 
         protected PerformanceCalculator(Invoice.Performance performance)
         {

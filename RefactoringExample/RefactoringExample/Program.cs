@@ -81,7 +81,17 @@ namespace RefactoringExample
         {
             return Plays.GetPlay(playId);
         }
-
+        
+        static PerformanceCalculator CreatePerformanceCalculator(Invoice.Performance performance, Plays.Play play)
+        {
+            return play.Type switch
+            {
+                "tragedy" => new TragedyCalculator(performance),
+                "comedy" => new ComedyCalculator(performance),
+                _ => throw new Exception($"Unknown type: {play.Type}")
+            };
+        }
+        
         class ResultForPerf
         {
             public Plays.Play Play { get; set; }
@@ -97,16 +107,6 @@ namespace RefactoringExample
             public List<ResultForPerf> Performances { get; set; }
             public decimal TotalAmount { get; set; }
             public decimal TotalVolumeCredits { get; set; }
-        }
-
-        static PerformanceCalculator CreatePerformanceCalculator(Invoice.Performance performance, Plays.Play play)
-        {
-            return play.Type switch
-            {
-                "tragedy" => new TragedyCalculator(performance),
-                "comedy" => new ComedyCalculator(performance),
-                _ => throw new Exception($"Unknown type: {play.Type}")
-            };
         }
 
         static Data GetDataFromJson(string[] args)
