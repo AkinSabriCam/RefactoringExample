@@ -12,30 +12,35 @@ namespace RefactoringExample
 
         static void Main(string[] args)
         {
-            var data = GetDataFromJson(args);
-            Plays = data.Plays;
-            Invoices = data.Invoices;
+            SetPlaysAndInvoicesProps(args);
             var performances = GetPerformancesByCustomer("BigCo");
             var enrichedPerformances = EnrichPerformances(performances);
-            
+
             var resultStatement = new ResultForStatement
             {
-                Customer =  "BigCo",
+                Customer = "BigCo",
                 Performances = enrichedPerformances,
                 TotalAmount = CalculateTotalAmount(enrichedPerformances),
                 TotalVolumeCredits = CalculateTotalVolumeCredits(enrichedPerformances),
             };
 
             var result = $"Statement for {resultStatement.Customer} \n";
-            foreach(var perf in resultStatement.Performances)
+            foreach (var perf in resultStatement.Performances)
             {
                 result += $"{perf.Play.Name}: ${perf.Amount}  {perf.Audience} seats \n";
             }
 
             result += $"Amount owned is ${resultStatement.TotalAmount} \n";
-            result += $"You earned ${resultStatement.TotalVolumeCredits} credits \n";
+            result += $"You earned {resultStatement.TotalVolumeCredits} credits \n";
 
             Console.WriteLine(result);
+        }
+
+        private static void SetPlaysAndInvoicesProps(string[] args)
+        {
+            var data = GetDataFromJson(args);
+            Plays = data.Plays;
+            Invoices = data.Invoices;
         }
 
         static decimal CalculateTotalAmount(IEnumerable<ResultForPerf> performances)
@@ -57,13 +62,14 @@ namespace RefactoringExample
         {
             var results = new List<ResultForPerf>();
             foreach (var perf in performances)
-            {
+            {    
                 var play = GetPlay(perf.PlayId);
+                var performanceCalculator = CreatePerformanceCalculator(perf, play);
                 results.Add(new ResultForPerf
                 {
                     Play = play,
-                    Amount = CalculateAmount(perf, play),
-                    VolumeCredits = CalculateVolumeCredits(perf, play),
+                    Amount =performanceCalculator.GetAmount(),
+                    VolumeCredits = performanceCalculator.GetVolumeCredits(),
                     Audience = perf.Audience
                 });
             }
@@ -71,58 +77,17 @@ namespace RefactoringExample
             return results;
         }
 
-        static decimal CalculateVolumeCredits(Invoice.Performance perf, Plays.Play play)
-        {
-            // add volume credits
-            var volumeCredits = Convert.ToDecimal(Math.Max(perf.Audience - 30, 0).ToString());
-            // add extra credit for every ten comedy attendees
-            if ("comedy" == play.Type)
-                volumeCredits += Math.Floor((decimal) (perf.Audience / 5));
-            return volumeCredits;
-        }
-
-        static int CalculateAmount(Invoice.Performance perf, Plays.Play play)
-        {
-            var thisAmount = 0;
-
-            switch (play.Type)
-            {
-                case "tragedy":
-                    thisAmount = 40000;
-                    if (perf.Audience > 30)
-                    {
-                        thisAmount += 1000 * (perf.Audience - 30);
-                    }
-
-                    break;
-                case "comedy":
-                    thisAmount = 30000;
-                    if (perf.Audience > 20)
-                    {
-                        thisAmount += 1000 + 500 * (perf.Audience - 20);
-                    }
-
-                    thisAmount += 300 * perf.Audience;
-                    break;
-                default:
-                    throw new Exception($"unkown type {play.Type}");
-            }
-
-            return thisAmount;
-        }
-
         static Plays.Play GetPlay(string playId)
         {
             return Plays.GetPlay(playId);
         }
-        
-        
+
         class ResultForPerf
         {
             public Plays.Play Play { get; set; }
             public decimal Amount { get; set; }
             public decimal VolumeCredits { get; set; }
-            
+
             public int Audience { get; set; }
         }
 
@@ -133,7 +98,17 @@ namespace RefactoringExample
             public decimal TotalAmount { get; set; }
             public decimal TotalVolumeCredits { get; set; }
         }
-        
+
+        static PerformanceCalculator CreatePerformanceCalculator(Invoice.Performance performance, Plays.Play play)
+        {
+            return play.Type switch
+            {
+                "tragedy" => new TragedyCalculator(performance),
+                "comedy" => new ComedyCalculator(performance),
+                _ => throw new Exception($"Unknown type: {play.Type}")
+            };
+        }
+
         static Data GetDataFromJson(string[] args)
         {
             var configuration = ReadDataFromJson(args);
