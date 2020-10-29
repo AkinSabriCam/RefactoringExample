@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace ExamOnRefacttoring
+namespace RefactoringExample
 {
     public class Data
     {
